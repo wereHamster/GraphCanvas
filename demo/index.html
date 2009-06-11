@@ -1,0 +1,112 @@
+<html>
+   <head>
+      <title>GraphCanvas Demo (with AJAX)</title>
+      
+      <style type="text/css" media="screen">
+         html, body {
+            padding: 0;
+            margin: 0;
+         }
+         
+         body {
+            text-align: left;
+            background-color: #000;
+            padding: 10px 0 0 10px;
+         }
+         
+         div#canvas {
+            display: block;
+            background-color: #000;
+         }
+         
+         /* context menu specific */
+         #contextmenu {
+            border:1px solid #999; padding:3px; background:#eee; font-size:12px; font-family:tahoma,arial,sans-serif; color:#000; margin: 3px;
+         }
+      </style>
+      
+      <script type="text/javascript" src="../mootools-1.2-core-nc.js"></script>
+      <script type="text/javascript" src="../mootools-1.2-more.js.js"></script>      
+      <script type="text/javascript" src="../excanvas.js"></script>
+      <script type="text/javascript" src="../canvastext.js"></script>
+      <script type="text/javascript" src="../contextmenu.js"></script>
+      <script type="text/javascript" src="../graphcanvas.js"></script>
+      
+<script type="text/javascript">
+var onEnter = function(cv, where, e) {
+	cv.hoverCanvas.setStyle('cursor', 'pointer');
+	
+	// highlight the entity under the mouse
+	cv.highlight(where[0]);
+	
+	var contextmenu = new ContextMenu();
+	
+	if (!where[1]) {
+		// if it is a node, highlight all callers and callees
+		cv.drawParent(cv.hoverCanvasCx, where[0]);
+		cv.drawChildren(cv.hoverCanvasCx, where[0]);
+		
+		contextmenu.menu.innerHTML = 'Info about node: '+where[0].id;
+	} else {
+		// if it is an edge, highlight the edge itself and the other node
+		cv.highlight(where[1]); // edge
+		cv.highlight(where[2]); // other node this edge is connecting
+		
+		contextmenu.menu.innerHTML = 'Info about edge: '+where[1].id;
+	}
+	
+	contextmenu.show(e.page.x, e.page.y);
+};
+
+var onClick = function(cv, where, e) {
+	e.stop();
+	
+	var contextmenu = new ContextMenu();
+	contextmenu.menu.innerHTML = 'Clicked on: '+where[0].id;
+	contextmenu.show(e.page.x, e.page.y);
+};
+
+var onLeave = function(cv, where, e) {
+	cv.hoverCanvas.setStyle('cursor', 'default');
+	cv.restore();
+	
+	var contextmenu = new ContextMenu();
+	contextmenu.hide();
+};
+
+var onContextMenu = function(cv, where, e) {
+	e.stop();
+	
+	var contextmenu = new ContextMenu();
+	if (where) {
+		if (!where[1]) {
+			contextmenu.menu.innerHTML = 'Context menu for node: '+where[0].id;
+		} else {
+			contextmenu.menu.innerHTML = 'Context menu for edge: '+where[0].id;
+		}
+	} else {
+		contextmenu.menu.innerHTML = 'No node here ...';
+	}
+	
+	contextmenu.show(e.page.x, e.page.y);
+};
+
+// same with onContextMenu
+
+window.onload = function() {
+	new GraphCanvas.Remote(false, $('canvas'), {
+		url: './generate.php',
+		onEnter: onEnter,
+		onClick: onClick,
+		onLeave: onLeave,
+		onContextMenu: onContextMenu,
+	});
+};
+</script>
+   </head>
+   
+   <body>
+      <div id="canvas"></div>
+      <div id="contextmenu"></div>
+   </body>
+</html>
