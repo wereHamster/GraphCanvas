@@ -279,9 +279,9 @@ var GraphCanvas = new Class({
          
 		this.hoverCanvasCx = this.hoverCanvas.getContext('2d');
 		CanvasTextFunctions.enable(this.hoverCanvasCx);
-		 
+
+		this.setup();		 
 		this.redraw();
-		this.draw();
 	},
    
    drawGraph: function(nodes) {
@@ -349,7 +349,7 @@ var GraphCanvas = new Class({
 		this.canvas.setStyle('opacity', '1.0');
 	},
    
-	draw: function() {
+	setup: function() {
 		$(this.hoverCanvas).addEvent('mousemove', function(e) {
 			e = new Event(e);
             
