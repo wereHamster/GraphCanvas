@@ -280,13 +280,7 @@ var GraphCanvas = new Class({
 		this.hoverCanvasCx = this.hoverCanvas.getContext('2d');
 		CanvasTextFunctions.enable(this.hoverCanvasCx);
 		 
-		var nodes = [];
-		this.node.each(function(node) {
-			nodes.push(node);
-		}, this);
-			
-		this.drawGraph(nodes);
-			
+		this.redraw();
 		this.draw();
 	},
    
@@ -329,6 +323,18 @@ var GraphCanvas = new Class({
 		}, this);
       
 		node.draw(this, cx);
+	},
+	
+	redraw: function() {
+		this.cx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.cx.save();
+		
+		var nodes = [];
+		this.node.each(function(node) {
+			nodes.push(node);
+		}, this);
+			
+		this.drawGraph(nodes);
 	},
 	
 	highlight: function(entity) {
