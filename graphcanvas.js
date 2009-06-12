@@ -116,16 +116,6 @@ var GraphNode = new Class({
                                           
 		return [ this ];
 	},
-	
-	drawEdge: function(cv, cx, id) {
-		if (id) {
-			this.edge[id].draw(cv, cx);
-		} else {
-			this.edge.each(function(edge, id) {
-				edge.draw(cv, cx);	
-			}, this);
-		}
-	},
 });
 
 var GraphEdge = new Class({
@@ -235,9 +225,6 @@ var GraphCanvas = new Class({
 	
 	initialize: function(data, ct, options) {
 		this.setOptions(options);
-
-		this.data = $H(data);
-		this.data.nodes = $H(data.nodes);
 		     
 		ct.empty();
 		ct = $(ct);
@@ -302,16 +289,6 @@ var GraphCanvas = new Class({
 			
 		this.draw();
 	},
-
-   // draw the points onto the canvas
-   drawNode: function(cx, id) {
-      new GraphNode(this, this.data.nodes[id]).draw(this, cx);
-   },
-    
-   // draw the connection lines for a particular item
-   drawEdge: function(cx, edge) {
-      new GraphEdge(this, edge).draw(this, cx);
-   },
    
    drawGraph: function(nodes) {
       var node = nodes.splice(0,1)[0];
