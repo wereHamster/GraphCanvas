@@ -40,13 +40,19 @@ var GraphEntity = new Class({
 var GraphNode = new Class({
 	Extends: GraphEntity,
 	
-	initialize: function(id, attr) {
+	initialize: function(cv, id, attr) {
 		this.parent(id, attr);
 		
 		this.edge = $H();
 		$H(attr.edges).each(function(edge, id) {
-			this.edge[id] = new GraphEdge(id, edge);
+			this.edge[id] = new GraphEdge(cv, id, edge);
 		}, this);
+		
+		this.attr.width = cv.xform(this.attr.width * 72);
+		this.attr.height = cv.xform(this.attr.height * 72);
+		
+		this.attr.pos[0] = cv.xform(this.attr.pos[0]);
+		this.attr.pos[1] = cv.canvas.height - cv.xform(this.attr.pos[1]) - 16;
 	},
 	
 	roundedRect: function(cx, x, y, w, h, r) {
@@ -64,8 +70,8 @@ var GraphNode = new Class({
 	draw: function(cv, cx) {
 		cx.lineWidth = 3;
 
-		var w = cv.xform(this.attr.width * 72), h = cv.xform(this.attr.height * 72);
-		var x = cv.xform(this.attr.pos[0]) + 8, y = cv.canvas.height - (cv.xform(this.attr.pos[1]) + h / 2) - 8;
+		var w = this.attr.width, h = this.attr.height;
+		var x = this.attr.pos[0] + 8, y = this.attr.pos[1] - h / 2 + 8;
       
 		cx.fillStyle = cx.strokeStyle = this.getColor('color', 100);
 		cx.beginPath();
@@ -98,15 +104,14 @@ var GraphNode = new Class({
 			}
 		}
 		
-		var w = cv.xform(this.attr.width * 72), h = cv.xform(this.attr.height * 72);
-		var height = cv.canvas.height;
-		if (x - 8 < cv.xform(this.attr.pos[0]) - w / 2)
+		var w = this.attr.width, h = this.attr.height;
+		if (x - 8 < this.attr.pos[0] - w / 2)
 			return false;
-		else if (x - 8 > cv.xform(this.attr.pos[0]) + w / 2)
+		else if (x - 8 > this.attr.pos[0] + w / 2)
 			return false;
-		else if (y + 8 < height - cv.xform(this.attr.pos[1]) - h / 2)
+		else if (y - 8 < this.attr.pos[1] - h / 2)
 			return false;
-		else if (y + 8 > height - cv.xform(this.attr.pos[1]) + h / 2)
+		else if (y - 8 > this.attr.pos[1] + h / 2)
 			return false;
                                           
 		return [ this ];
@@ -126,8 +131,18 @@ var GraphNode = new Class({
 var GraphEdge = new Class({
 	Extends: GraphEntity,
 	
-	initialize: function(id, attr) {
+	initialize: function(cv, id, attr) {
 		this.parent(id, attr);
+		
+		this.attr.pos.each(function(pos) {
+			pos[0] = cv.xform(pos[0]);
+			pos[1] = cv.canvas.height - cv.xform(pos[1]) - 16;
+		}, this);
+		
+		if (this.attr.lp) {
+			this.attr.lp[0] = cv.xform(this.attr.lp[0]);
+			this.attr.lp[1] = cv.canvas.height - cv.xform(this.attr.lp[1]) - 16;
+		}
 	},
 	
 	pathCommands: [
@@ -143,12 +158,12 @@ var GraphEdge = new Class({
          
 		cx.beginPath();
       
-		cx.moveTo(cv.xform(this.attr.pos[1][0]) + 8, cv.canvas.height - cv.xform(this.attr.pos[1][1]) - 8);
+		cx.moveTo(this.attr.pos[1][0] + 8, this.attr.pos[1][1] + 8);
 		for (var i = 1; i < this.attr.pos.length - 1; ) {
 			var order = Math.min(4, this.attr.pos.length - i), coords = [];
 			for (var j = 1; j < order; ++j) {
-				coords.push(cv.xform(this.attr.pos[i + j][0]) + 8);
-				coords.push(cv.canvas.height - cv.xform(this.attr.pos[i + j][1]) - 8);
+				coords.push(this.attr.pos[i + j][0] + 8);
+				coords.push(this.attr.pos[i + j][1] + 8);
 			}
 			
 			this.pathCommands[order - 1].apply(cx, coords);
@@ -158,8 +173,8 @@ var GraphEdge = new Class({
 		cx.stroke();
 
 		var length = this.attr.pos.length;		
-		var x1 = cv.xform(this.attr.pos[0][0]) + 8, y1 = cv.canvas.height - cv.xform(this.attr.pos[0][1]) - 8;
-		var x2 = cv.xform(this.attr.pos[length - 1][0]) + 8, y2 = cv.canvas.height - cv.xform(this.attr.pos[length - 1][1]) - 8;
+		var x1 = this.attr.pos[0][0] + 8, y1 = this.attr.pos[0][1] + 8;
+		var x2 = this.attr.pos[length - 1][0] + 8, y2 = this.attr.pos[length - 1][1] + 8;
 
 		cx.beginPath();
 		cx.moveTo(x1, y1);
@@ -176,7 +191,7 @@ var GraphEdge = new Class({
 
 		cx.strokeStyle = cx.fillStyle = this.attr.fontcolor;
 		if (this.attr.lp) {
-			var x = cv.xform(this.attr.lp[0]) + 8 + 4, y = cv.canvas.height - cv.xform(this.attr.lp[1]) - 8;
+			var x = this.attr.lp[0] + 8 + 4, y = this.attr.lp[1] + 8;
 			cx.drawTextCenter('sans', cv.options.fontSize, x, y, this.attr.label);
 		}
 	},
@@ -186,13 +201,13 @@ var GraphEdge = new Class({
 			var w = cx.measureText('sans', cv.options.fontSize, this.attr.label);
 			var h = cx.fontAscent('sans', cv.options.fontSize);
                  
-			if (x - 8 - 4 < cv.xform(this.attr.lp[0]) - w / 2)
+			if (x - 8 - 4 < this.attr.lp[0] - w / 2)
 				return false;
-			else if (x - 8 - 4 > cv.xform(this.attr.lp[0]) + w / 2)
+			else if (x - 8 - 4 > this.attr.lp[0] + w / 2)
 				return false;
-			else if (y + 8 < cv.canvas.height - cv.xform(this.attr.lp[1]) - h / 2)
+			else if (y - 8 < this.attr.lp[1] - h / 2)
 				return false;
-			else if (y + 8 > cv.canvas.height - cv.xform(this.attr.lp[1]) + h / 2)
+			else if (y - 8 > this.attr.lp[1] + h / 2)
 				return false;
 
 			return this; 
@@ -223,11 +238,6 @@ var GraphCanvas = new Class({
 
 		this.data = $H(data);
 		this.data.nodes = $H(data.nodes);
-		
-		this.node = $H();
-		$H(data.nodes).each(function(node, id) {
-			this.node[id] = new GraphNode(id, node);
-		}, this);
 		     
 		ct.empty();
 		ct = $(ct);
@@ -243,6 +253,11 @@ var GraphCanvas = new Class({
 		}
 
 		this.canvas = canvas;
+		
+		this.node = $H();
+		$H(data.nodes).each(function(node, id) {
+			this.node[id] = new GraphNode(this, id, node);
+		}, this);
 
 		this.cx = canvas.getContext('2d');
 		var canvasPos = this.canvas.getCoordinates();
