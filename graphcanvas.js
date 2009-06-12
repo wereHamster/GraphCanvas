@@ -345,7 +345,7 @@ var GraphCanvas = new Class({
 	},
 	
 	restore: function() {
-		this.hoverCanvasCx.clearRect(0, 0, this.canvas.height, this.canvas.width);
+		this.hoverCanvasCx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.hoverCanvasCx.save();
 		
 		this.canvas.setStyle('opacity', '1.0');
