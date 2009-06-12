@@ -74,6 +74,10 @@ var onClick = function(cv, where, e) {
 	}, cv);
 	
 	cv.redraw();
+	
+	// Treat it as if the mouse left this node, so the node disappears
+	// from the overlay and the cursor is restored
+	onLeave(cv, where, e);
 };
 
 var onLeave = function(cv, where, e) {
