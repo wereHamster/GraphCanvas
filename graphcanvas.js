@@ -399,55 +399,21 @@ GraphCanvas.implement(new Options);
 
 // helper class for AJAX/JSON-based graph retrieval
 GraphCanvas.Remote = new Class({
-    
-    Extends: GraphCanvas,
 
-    initialize: function(data, ct, options) {
-        var preloadImages = function(wheelData) {
-            var imageUrls = [], map = {};
+	Extends: GraphCanvas,
 
-            for (var i = 0, l = wheelData.length; i < l; i++) {
-                if (wheelData[i]['imageUrl']) {
-                    imageUrls.push(wheelData[i]['imageUrl']);
-                    map[i] = imageUrls.length - 1;
-                }
-            }
-
-            if (imageUrls.length == 0)
-                return false;
-
-            var images = new Asset.images(imageUrls, {
-                onComplete: function() {
-                    for (var j in map) {
-                        wheelData[j]['image'] = images[map[j]];
-                    }
-
-                    // hack to make this.parent work within callback
-                    arguments.callee._parent_ = this.initialize._parent_;
-                    
-                    this.parent(wheelData, ct, options);
-                }.bind(this)
-            });
-
-            return true;
-        }.bind(this);
-
-        if (options && options.url) {
-            new Request.JSON({
-              url: options.url,
-              onComplete: function(wheelData) {
-                  data = wheelData;
-
-                  // hack to make this.parent work within callback
-                  arguments.callee._parent_ = this.initialize._parent_;
-
-                  if (!preloadImages(data, ct, options))
-                      this.parent(data, ct, options);
-              
-              }.bind(this)
-            }).send();
-        } else if (!preloadImages(data, ct, options)) {
-          this.parent(data, ct, options);
-        }
-    }
+	initialize: function(data, ct, options) {
+		if (options && options.url) {
+			new Request.JSON({
+				url: options.url,
+				onComplete: function(graphData) {
+					// hack to make this.parent work within callback
+					arguments.callee._parent_ = this.initialize._parent_;
+					this.parent(graphData, ct, options);
+				}.bind(this)
+			}).send();
+		} else {
+			this.parent(data, ct, options);
+		}
+	},
 });
