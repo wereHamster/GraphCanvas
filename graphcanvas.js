@@ -172,7 +172,8 @@ var GraphEdge = new Class({
 			cx.lineTo(x1 - Math.abs(y2 - y1) / 2, y2);
 			cx.lineTo(x1 + Math.abs(y2 - y1) / 2, y2);
 		} else {
-			var m = -(x2 - x1) / (y2 - y1), d = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)) / 2;
+			var m = y1 == y2 ? 0 : -(x2 - x1) / (y2 - y1);
+			var d = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)) / 2;
 			var dx = Math.sqrt(Math.pow(d, 2) / (1 + Math.pow(m, 2)));
 			cx.lineTo(x2 + dx, y2 + dx * m);
 			cx.lineTo(x2 - dx, y2 - dx * m);
