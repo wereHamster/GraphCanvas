@@ -64,6 +64,16 @@ var onClick = function(cv, where, e) {
 	var contextmenu = new ContextMenu();
 	contextmenu.menu.innerHTML = 'Clicked on: '+where[0].id;
 	contextmenu.show(e.page.x, e.page.y);
+	
+	// delete the node and all edges leading to it
+	var nodeId = where[0].id;
+	delete cv.node[nodeId];
+	
+	cv.node.each(function(node) {
+		delete node.edge[nodeId];
+	}, cv);
+	
+	cv.redraw();
 };
 
 var onLeave = function(cv, where, e) {
